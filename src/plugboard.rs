@@ -1,4 +1,4 @@
-struct Plugboard {
+pub struct Plugboard {
     wiring: Vec<u32>,
     connections: String,
 }

@@ -20,7 +20,7 @@ pub struct Rotor {
     ring_setting: u32,
 }
 impl Rotor {
-    fn new(name: RotorName, rotor_position: u32, ring_setting: u32) -> Self {
+    pub fn new(name: RotorName, rotor_position: u32, ring_setting: u32) -> Self {
         Rotor {
             name: name,
             rotor_position,

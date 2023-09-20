@@ -1,4 +1,5 @@
-mod pugboard;
+mod engima;
+mod plugboard;
 mod reflector;
 mod rotor;
 

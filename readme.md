@@ -11,7 +11,8 @@ At the moment this exists in an incomplete form with just the Rotor and Reflecto
 ## PHASE 1
 
 - [X] Add the plugboard code
-- [ ] Add the Enigma code to link together
+- [X] Add the Enigma code to link together
+- [ ] Get the Enigma code to work - at the moment it just compiles
 - [ ] Get code tested to working
 - [ ] Get a builder pattern for the plugboard, reflector, rotor structures
 - [ ] Improve the type structures to avoid generic parameters
