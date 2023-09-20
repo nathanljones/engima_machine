@@ -10,14 +10,16 @@ At the moment this exists in an incomplete form with just the Rotor and Reflecto
 
 ## PHASE 1
 
-- [ ] Add the plugboard code
+- [X] Add the plugboard code
 - [ ] Add the Enigma code to link together
 - [ ] Get code tested to working
+- [ ] Get a builder pattern for the plugboard, reflector, rotor structures
+- [ ] Improve the type structures to avoid generic parameters
 
 ## PHASE 2
 
 - [ ] Add a GUI to illustrate what's going on (will be using [MacroQuad](https://macroquad.rs/) for this)
-- [ ] Improve the type structures to avoid generic parameters
+
 
 # NOTE
 

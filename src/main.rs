@@ -1,3 +1,4 @@
+mod pugboard;
 mod reflector;
 mod rotor;
 
