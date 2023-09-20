@@ -199,45 +199,53 @@ mod tests {
         let expected_output = String::from("CFBJTPYXROYGGVTGBUTEBURBXNUZGGRALBNXIQHVBFWPLZQSCEZWTAWCKKPRSWOGNYXLCOTQAWDRRKBCADTKZGPWSTNYIJGLVIUQ");
         assert_eq!(expected_output, output);
     }
-}
-
-/*
-
-class EnigmaTest {
-
-
-
-    @Test
-    void decryptTest() {
-        Random rand = new Random();
-        String[] allRotors = new String[] {"I", "II", "III", "IV", "V", "VI", "VII", "VIII"};
-
-        char[] input = new char[1000];
-        for (int i = 0; i < 1000; i++) {
-            input[i] = (char)(rand.nextInt(26) + 65);
-        }
-
-        for (int test = 0; test < 10; test++) {
-            // Random initialisation
-            String[] rotors = new String[] { allRotors[rand.nextInt(8)],
-                    allRotors[rand.nextInt(8)],
-                    allRotors[rand.nextInt(8)]};
-
-            int[] startingPositions = new int[] {rand.nextInt(26),rand.nextInt(26),rand.nextInt(26)};
-            int[] ringSettings = new int[] {rand.nextInt(26), rand.nextInt(26), rand.nextInt(26)};
-
-            // Machine 1 - Encryption
-            Enigma e = new Enigma(rotors, "B", startingPositions, ringSettings, "");
-            char[] ciphertext = e.encrypt(input);
-
-            // Machine 2 - Decryption
-            Enigma e2 = new Enigma(rotors, "B", startingPositions, ringSettings, "");
-            char[] plaintext = e2.encrypt(ciphertext);
-
-            assertArrayEquals(input, plaintext);
-        }
-
+    #[test]
+    fn decrypt_test() {
+        let allrotors: Vec<RotorName> = vec![
+            RotorName::I,
+            RotorName::II,
+            RotorName::III,
+            RotorName::IV,
+            RotorName::V,
+            RotorName::VI,
+            RotorName::VII,
+            RotorName::VIII,
+        ];
+        let input: String = std::iter::repeat_with(|| fastrand::uppercase())
+            .take(1000)
+            .collect();
+        let rotors_used: Vec<RotorName> = fastrand::choose_multiple(allrotors.into_iter(), 3);
+        let rotors_used2 = rotors_used.clone();
+        let rotor_positions = vec![
+            fastrand::u32(0..25),
+            fastrand::u32(0..25),
+            fastrand::u32(0..25),
+        ];
+        let rotor_positions2 = rotor_positions.clone();
+        let rotor_settings = vec![
+            fastrand::u32(0..25),
+            fastrand::u32(0..25),
+            fastrand::u32(0..25),
+        ];
+        let rotor_settings2 = rotor_settings.clone();
+        let mut enigma1 = Enigma::new(
+            rotors_used,
+            ReflectorType::B,
+            rotor_positions,
+            rotor_settings,
+            String::from(""),
+        );
+        enigma1.wire_enigma();
+        let cypher_text = enigma1.encrypt_text(&input);
+        let mut enigma2 = Enigma::new(
+            rotors_used2,
+            ReflectorType::B,
+            rotor_positions2,
+            rotor_settings2,
+            String::from(""),
+        );
+        enigma2.wire_enigma();
+        let plain_text = enigma2.encrypt_text(&cypher_text);
+        assert_eq!(plain_text, input);
     }
-
 }
-*/

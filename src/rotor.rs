@@ -145,4 +145,54 @@ mod tests {
         rotor.set_encoding();
         rotor.set_wiring();
     }
+    #[test]
+    fn is_at_a_notch() {
+        let mut rotor = Rotor::new(RotorName::II, 1, 2);
+        rotor.set_encoding();
+        rotor.set_wiring();
+        assert_eq!(rotor.is_at_a_notch(), false);
+        rotor.turnover();
+        rotor.turnover();
+        rotor.turnover();
+        assert_eq!(rotor.is_at_a_notch(), true);
+    }
+    #[test]
+    fn is_at_a_notch_double_step() {
+        let mut rotor = Rotor::new(RotorName::VI, 10, 2);
+        rotor.set_encoding();
+        rotor.set_wiring();
+        assert_eq!(rotor.is_at_a_notch(), false);
+        rotor.turnover();
+        rotor.turnover();
+        assert_eq!(rotor.is_at_a_notch(), true);
+
+        let mut rotor2 = Rotor::new(RotorName::VI, 20, 2);
+        rotor2.set_encoding();
+        rotor2.set_wiring();
+        assert_eq!(rotor2.is_at_a_notch(), false);
+        rotor2.turnover();
+        rotor2.turnover();
+        rotor2.turnover();
+        rotor2.turnover();
+        rotor2.turnover();
+        assert_eq!(rotor2.is_at_a_notch(), true);
+    }
+    #[test]
+    fn encode_forward() {
+        let mut rotor = Rotor::new(RotorName::II, 1, 2);
+        rotor.set_encoding();
+        rotor.set_wiring();
+        assert_eq!(rotor.forward(1), 1);
+        assert_eq!(rotor.forward(9), 24);
+        assert_eq!(rotor.forward(21), 16);
+    }
+    #[test]
+    fn encode_backward() {
+        let mut rotor = Rotor::new(RotorName::II, 1, 2);
+        rotor.set_encoding();
+        rotor.set_wiring();
+        assert_eq!(rotor.backward(1), 1);
+        assert_eq!(rotor.backward(9), 6);
+        assert_eq!(rotor.backward(21), 8);
+    }
 }
