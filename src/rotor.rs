@@ -114,28 +114,28 @@ impl Rotor {
         ret_vec
     }
 
-    fn encipher(k: u32, pos: i32, ring: i32, mapping: &[u32]) -> u32 {
+    fn encipher(character: u32, pos: i32, ring: i32, mapping: &[u32]) -> u32 {
         let shift: i32 = pos - ring;
-        let calc = ((k as i32 + shift + NO_LETTERS_IN_ALPHABET as i32)
+        let calc = ((character as i32 + shift + NO_LETTERS_IN_ALPHABET as i32)
             % NO_LETTERS_IN_ALPHABET as i32) as usize;
         let calc2: i32 = mapping[calc] as i32 - shift + NO_LETTERS_IN_ALPHABET as i32;
         (calc2 % NO_LETTERS_IN_ALPHABET as i32) as u32
     }
 
-    pub fn forward(&self, c: u32) -> u32 {
+    pub fn forward(&self, character: u32) -> u32 {
         #[allow(clippy::cast_possible_truncation)]
         Rotor::encipher(
-            c,
+            character,
             self.rotor_position as i32,
             self.ring_setting as i32,
             &self.forward_wiring,
         )
     }
 
-    pub fn backward(&self, c: u32) -> u32 {
+    pub fn backward(&self, character: u32) -> u32 {
         #[allow(clippy::cast_possible_truncation)]
         Rotor::encipher(
-            c,
+            character,
             self.rotor_position as i32,
             self.ring_setting as i32,
             &self.backward_wiring,

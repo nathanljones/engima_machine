@@ -8,9 +8,9 @@ pub enum ReflectorType {
 impl ReflectorType {
     fn wiring(&self) -> String {
         match self {
-            ReflectorType::B => "YRUHQSLDPXNGOKMIEBFZCWVJAT".to_string(),
-            ReflectorType::C => "FVPJIAOYEDRZXWGCTKUQSBNMHL".to_string(),
-            ReflectorType::Default => "ZYXWVUTSRQPONMLKJIHGFEDCBA".to_string(),
+            ReflectorType::B => String::from("YRUHQSLDPXNGOKMIEBFZCWVJAT"),
+            ReflectorType::C => String::from("FVPJIAOYEDRZXWGCTKUQSBNMHL"),
+            ReflectorType::Default => String::from("ZYXWVUTSRQPONMLKJIHGFEDCBA"),
         }
     }
 }

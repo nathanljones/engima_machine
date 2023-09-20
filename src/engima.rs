@@ -50,11 +50,11 @@ impl Enigma {
         self.right_rotor.turnover();
     }
 
-    fn encrypt(&mut self, c: u32) -> u32 {
+    fn encrypt(&mut self, character: u32) -> u32 {
         self.rotate();
 
         // Plugboard in
-        let c0 = self.plugboard.forward(c);
+        let c0 = self.plugboard.forward(character);
 
         // Right to left
         let c1 = self.right_rotor.forward(c0);
@@ -73,9 +73,15 @@ impl Enigma {
         self.plugboard.forward(c7)
     }
 
-    fn encrypt_char(&mut self, c: char) -> char {
-        let ret_number = self.encrypt(c as u32 - ASCII_OFFSET);
-        char::from_u32(ret_number + ASCII_OFFSET).unwrap()
+    fn encrypt_char(&mut self, character: char) -> char {
+        let ret_number = self.encrypt(Enigma::convert_char_to_number(character));
+        Enigma::convert_number_to_char(ret_number)
+    }
+    fn convert_char_to_number(character: char) -> u32 {
+        character as u32 - ASCII_OFFSET
+    }
+    fn convert_number_to_char(letter_number: u32) -> char {
+        char::from_u32(letter_number + ASCII_OFFSET).unwrap()
     }
 
     pub fn encrypt_text(&mut self, text: &str) -> String {

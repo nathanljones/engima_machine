@@ -11,8 +11,8 @@ impl Plugboard {
             connections,
         }
     }
-    pub fn forward(&self, c: u32) -> u32 {
-        self.wiring[c as usize]
+    pub fn forward(&self, character: u32) -> u32 {
+        self.wiring[character as usize]
     }
 
     fn identity_plugboard() -> Vec<u32> {
