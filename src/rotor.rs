@@ -11,6 +11,36 @@ pub enum RotorName {
     VIII,
     Identity,
 }
+impl RotorName {
+    fn wiring(self) -> String {
+        match self {
+            RotorName::I => String::from("EKMFLGDQVZNTOWYHXUSPAIBRCJ"),
+            RotorName::II => String::from("AJDKSIRUXBLHWTMCQGZNPYFVOE"),
+            RotorName::III => String::from("BDFHJLCPRTXVZNYEIWGAKMUSQO"),
+            RotorName::IV => String::from("ESOVPZJAYQUIRHXLNFTGKDCMWB"),
+            RotorName::V => String::from("VZBRGITYUPSDNHLXAWMJQOFECK"),
+            RotorName::VI => String::from("JPGVOUMFYQBENHZRDKASXLICTW"),
+            RotorName::VII => String::from("NZJHGRCXMYSWBOUFAIVLPEKQDT"),
+            RotorName::VIII => String::from("FKQHTLXOCBJSPDZRAMEWNIUYGV"),
+            RotorName::Identity => String::from("ABCDEFGHIJKLMNOPQRSTUVWXYZ"),
+        }
+    }
+    fn notch_position(self) -> u32 {
+        match self {
+            RotorName::I => 16,
+            RotorName::II => 4,
+            RotorName::III => 21,
+            RotorName::IV => 9,
+            RotorName::V => 25,
+            RotorName::VI | RotorName::VII | RotorName::VIII | RotorName::Identity => 0,
+        }
+    }
+}
+#[derive(PartialEq, Debug)]
+pub enum NotchStatus {
+    AtANotch,
+    NotAtANotch,
+}
 
 pub struct Rotor {
     name: RotorName,
@@ -34,51 +64,26 @@ impl Rotor {
         }
     }
     pub fn set_encoding(&mut self) {
-        match self.name {
-            RotorName::I => {
-                self.wiring = "EKMFLGDQVZNTOWYHXUSPAIBRCJ".to_string();
-                self.notch_position = 16;
-            }
-            RotorName::II => {
-                self.wiring = "AJDKSIRUXBLHWTMCQGZNPYFVOE".to_string();
-                self.notch_position = 4;
-            }
-            RotorName::III => {
-                self.wiring = "BDFHJLCPRTXVZNYEIWGAKMUSQO".to_string();
-                self.notch_position = 21;
-            }
-            RotorName::IV => {
-                self.wiring = "ESOVPZJAYQUIRHXLNFTGKDCMWB".to_string();
-                self.notch_position = 9;
-            }
-            RotorName::V => {
-                self.wiring = "VZBRGITYUPSDNHLXAWMJQOFECK".to_string();
-                self.notch_position = 25;
-            }
-            RotorName::VI => {
-                self.wiring = "JPGVOUMFYQBENHZRDKASXLICTW".to_string();
-                self.notch_position = 0;
-            }
-            RotorName::VII => {
-                self.wiring = "NZJHGRCXMYSWBOUFAIVLPEKQDT".to_string();
-                self.notch_position = 0;
-            }
-            RotorName::VIII => {
-                self.wiring = "FKQHTLXOCBJSPDZRAMEWNIUYGV".to_string();
-                self.notch_position = 0;
-            }
-            RotorName::Identity => {
-                self.wiring = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".to_string();
-                self.notch_position = 0;
-            }
-        };
+        self.wiring = self.name.wiring();
+        self.notch_position = self.name.notch_position();
+        self.set_wiring();
     }
-    pub fn is_at_a_notch(&self) -> bool {
+    pub fn notch_status(&self) -> NotchStatus {
         match self.name {
             RotorName::VI | RotorName::VII | RotorName::VIII => {
-                self.rotor_position == 12 || self.rotor_position == 25
+                if self.rotor_position == 12 || self.rotor_position == 25 {
+                    NotchStatus::AtANotch
+                } else {
+                    NotchStatus::NotAtANotch
+                }
             }
-            _ => self.notch_position == self.rotor_position,
+            _ => {
+                if self.notch_position == self.rotor_position {
+                    NotchStatus::AtANotch
+                } else {
+                    NotchStatus::NotAtANotch
+                }
+            }
         }
     }
 
@@ -95,7 +100,7 @@ impl Rotor {
             .map(|x| x as u32 - ASCII_OFFSET)
             .collect::<Vec<u32>>()
     }
-    pub fn set_wiring(&mut self) {
+    fn set_wiring(&mut self) {
         self.forward_wiring = Rotor::decode_wiring(&self.wiring);
         self.backward_wiring = self.inverse_wiring();
     }
@@ -108,6 +113,7 @@ impl Rotor {
         }
         ret_vec
     }
+
     fn encipher(k: u32, pos: i32, ring: i32, mapping: &[u32]) -> u32 {
         let shift: i32 = pos - ring;
         let calc = ((k as i32 + shift + NO_LETTERS_IN_ALPHABET as i32)
@@ -117,6 +123,7 @@ impl Rotor {
     }
 
     pub fn forward(&self, c: u32) -> u32 {
+        #[allow(clippy::cast_possible_truncation)]
         Rotor::encipher(
             c,
             self.rotor_position as i32,
@@ -126,6 +133,7 @@ impl Rotor {
     }
 
     pub fn backward(&self, c: u32) -> u32 {
+        #[allow(clippy::cast_possible_truncation)]
         Rotor::encipher(
             c,
             self.rotor_position as i32,
@@ -139,48 +147,38 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_init() {
-        let mut rotor = Rotor::new(RotorName::II, 3, 2);
-        rotor.set_encoding();
-        rotor.set_wiring();
-    }
-    #[test]
     fn is_at_a_notch() {
         let mut rotor = Rotor::new(RotorName::II, 1, 2);
         rotor.set_encoding();
-        rotor.set_wiring();
-        assert_eq!(rotor.is_at_a_notch(), false);
+        assert_eq!(rotor.notch_status(), NotchStatus::NotAtANotch);
         rotor.turnover();
         rotor.turnover();
         rotor.turnover();
-        assert_eq!(rotor.is_at_a_notch(), true);
+        assert_eq!(rotor.notch_status(), NotchStatus::AtANotch);
     }
     #[test]
     fn is_at_a_notch_double_step() {
         let mut rotor = Rotor::new(RotorName::VI, 10, 2);
         rotor.set_encoding();
-        rotor.set_wiring();
-        assert_eq!(rotor.is_at_a_notch(), false);
+        assert_eq!(rotor.notch_status(), NotchStatus::NotAtANotch);
         rotor.turnover();
         rotor.turnover();
-        assert_eq!(rotor.is_at_a_notch(), true);
+        assert_eq!(rotor.notch_status(), NotchStatus::AtANotch);
 
         let mut rotor2 = Rotor::new(RotorName::VI, 20, 2);
         rotor2.set_encoding();
-        rotor2.set_wiring();
-        assert_eq!(rotor2.is_at_a_notch(), false);
+        assert_eq!(rotor2.notch_status(), NotchStatus::NotAtANotch);
         rotor2.turnover();
         rotor2.turnover();
         rotor2.turnover();
         rotor2.turnover();
         rotor2.turnover();
-        assert_eq!(rotor2.is_at_a_notch(), true);
+        assert_eq!(rotor2.notch_status(), NotchStatus::AtANotch);
     }
     #[test]
     fn encode_forward() {
         let mut rotor = Rotor::new(RotorName::II, 1, 2);
         rotor.set_encoding();
-        rotor.set_wiring();
         assert_eq!(rotor.forward(1), 1);
         assert_eq!(rotor.forward(9), 24);
         assert_eq!(rotor.forward(21), 16);
@@ -189,7 +187,6 @@ mod tests {
     fn encode_backward() {
         let mut rotor = Rotor::new(RotorName::II, 1, 2);
         rotor.set_encoding();
-        rotor.set_wiring();
         assert_eq!(rotor.backward(1), 1);
         assert_eq!(rotor.backward(9), 6);
         assert_eq!(rotor.backward(21), 8);
