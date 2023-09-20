@@ -25,7 +25,7 @@ impl Reflector {
             forward_wiring: vec![],
         }
     }
-    fn set_wiring(&mut self) {
+    pub fn set_wiring(&mut self) {
         self.forward_wiring = self.decode_wiring(&self.reflector_type.wiring());
     }
     fn decode_wiring(&self, wiring: &str) -> Vec<u32> {

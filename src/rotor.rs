@@ -33,7 +33,7 @@ impl Rotor {
             backward_wiring: Vec::<u32>::new(),
         }
     }
-    pub fn set_encodind(&mut self) {
+    pub fn set_encoding(&mut self) {
         match self.name {
             RotorName::I => {
                 self.wiring = "EKMFLGDQVZNTOWYHXUSPAIBRCJ".to_string();
@@ -95,7 +95,7 @@ impl Rotor {
             .map(|x| x as u32 - ASCII_OFFSET)
             .collect::<Vec<u32>>()
     }
-    fn set_wiring(&mut self) {
+    pub fn set_wiring(&mut self) {
         self.forward_wiring = self.decode_wiring(&self.wiring);
         self.backward_wiring = self.inverse_wiring();
     }
@@ -108,18 +108,20 @@ impl Rotor {
         }
         ret_vec
     }
-    fn encipher(&self, k: u32, pos: u32, ring: u32, mapping: &[u32]) -> u32 {
-        let shift = pos - ring;
-        (mapping[((k + shift + NO_LETTERS_IN_ALPHABET) % NO_LETTERS_IN_ALPHABET) as usize] - shift
-            + NO_LETTERS_IN_ALPHABET)
-            % NO_LETTERS_IN_ALPHABET
+    fn encipher(&self, k: u32, pos: i32, ring: i32, mapping: &[u32]) -> u32 {
+        let shift: i32 = (pos - ring) as i32;
+        let calc = ((k as i32 + shift + NO_LETTERS_IN_ALPHABET as i32)
+            % NO_LETTERS_IN_ALPHABET as i32) as usize;
+        let calc2: i32 = (mapping[calc] as i32 - shift + NO_LETTERS_IN_ALPHABET as i32);
+        let calc3 = (calc2 % NO_LETTERS_IN_ALPHABET as i32) as u32;
+        calc3
     }
 
     pub fn forward(&self, c: u32) -> u32 {
         self.encipher(
             c,
-            self.rotor_position,
-            self.ring_setting,
+            self.rotor_position as i32,
+            self.ring_setting as i32,
             &self.forward_wiring,
         )
     }
@@ -127,8 +129,8 @@ impl Rotor {
     pub fn backward(&self, c: u32) -> u32 {
         self.encipher(
             c,
-            self.rotor_position,
-            self.ring_setting,
+            self.rotor_position as i32,
+            self.ring_setting as i32,
             &self.backward_wiring,
         )
     }
@@ -140,7 +142,7 @@ mod tests {
     #[test]
     fn test_init() {
         let mut rotor = Rotor::new(RotorName::II, 3, 2);
-        rotor.set_encodind();
+        rotor.set_encoding();
         rotor.set_wiring();
     }
 }
