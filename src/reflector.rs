@@ -21,14 +21,14 @@ pub struct Reflector {
 impl Reflector {
     pub fn new(reflector_type: ReflectorType) -> Self {
         Reflector {
-            reflector_type: reflector_type,
+            reflector_type,
             forward_wiring: vec![],
         }
     }
     pub fn set_wiring(&mut self) {
-        self.forward_wiring = self.decode_wiring(&self.reflector_type.wiring());
+        self.forward_wiring = Reflector::decode_wiring(&self.reflector_type.wiring());
     }
-    fn decode_wiring(&self, wiring: &str) -> Vec<u32> {
+    fn decode_wiring(wiring: &str) -> Vec<u32> {
         wiring
             .chars()
             .map(|x| x as u32 - ASCII_OFFSET)

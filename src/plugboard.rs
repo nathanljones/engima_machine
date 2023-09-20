@@ -1,4 +1,4 @@
-use crate::common::*;
+use crate::common::{ASCII_OFFSET, NO_LETTERS_IN_ALPHABET};
 pub struct Plugboard {
     wiring: Vec<u32>,
     connections: String,
@@ -15,7 +15,7 @@ impl Plugboard {
         self.wiring[c as usize]
     }
 
-    fn identity_plugboard(&self) -> Vec<u32> {
+    fn identity_plugboard() -> Vec<u32> {
         let mut mapping: Vec<u32> = vec![0; NO_LETTERS_IN_ALPHABET as usize];
         for i in 0..mapping.len() {
             mapping[i] = i as u32;
@@ -26,14 +26,14 @@ impl Plugboard {
         self.wiring = self.decode_plugboard();
     }
     fn decode_plugboard(&self) -> Vec<u32> {
-        if self.connections.len() == 0 {
-            return self.identity_plugboard();
+        if self.connections.is_empty() {
+            return Plugboard::identity_plugboard();
         }
         let pairings: Vec<&str> = self.connections.split(' ').collect();
 
-        let mut mapping: Vec<u32> = self.identity_plugboard();
+        let mut mapping: Vec<u32> = Plugboard::identity_plugboard();
 
-        for pair in pairings.into_iter() {
+        for pair in pairings {
             if pair.len() != 2 {
                 return mapping;
             }

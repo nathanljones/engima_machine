@@ -1,4 +1,4 @@
-use crate::common::*;
+use crate::common::{ASCII_OFFSET, NO_LETTERS_IN_ALPHABET};
 #[derive(Copy, Clone)]
 pub enum RotorName {
     I,
@@ -24,7 +24,7 @@ pub struct Rotor {
 impl Rotor {
     pub fn new(name: RotorName, rotor_position: u32, ring_setting: u32) -> Self {
         Rotor {
-            name: name,
+            name,
             rotor_position,
             ring_setting,
             wiring: String::new(),
@@ -75,9 +75,9 @@ impl Rotor {
     }
     pub fn is_at_a_notch(&self) -> bool {
         match self.name {
-            RotorName::VI => self.rotor_position == 12 || self.rotor_position == 25,
-            RotorName::VII => self.rotor_position == 12 || self.rotor_position == 25,
-            RotorName::VIII => self.rotor_position == 12 || self.rotor_position == 25,
+            RotorName::VI | RotorName::VII | RotorName::VIII => {
+                self.rotor_position == 12 || self.rotor_position == 25
+            }
             _ => self.notch_position == self.rotor_position,
         }
     }
@@ -89,14 +89,14 @@ impl Rotor {
     pub fn position(&self) -> u32 {
         self.rotor_position
     }
-    fn decode_wiring(&self, wiring: &str) -> Vec<u32> {
+    fn decode_wiring(wiring: &str) -> Vec<u32> {
         wiring
             .chars()
             .map(|x| x as u32 - ASCII_OFFSET)
             .collect::<Vec<u32>>()
     }
     pub fn set_wiring(&mut self) {
-        self.forward_wiring = self.decode_wiring(&self.wiring);
+        self.forward_wiring = Rotor::decode_wiring(&self.wiring);
         self.backward_wiring = self.inverse_wiring();
     }
 
@@ -108,17 +108,16 @@ impl Rotor {
         }
         ret_vec
     }
-    fn encipher(&self, k: u32, pos: i32, ring: i32, mapping: &[u32]) -> u32 {
-        let shift: i32 = (pos - ring) as i32;
+    fn encipher(k: u32, pos: i32, ring: i32, mapping: &[u32]) -> u32 {
+        let shift: i32 = pos - ring;
         let calc = ((k as i32 + shift + NO_LETTERS_IN_ALPHABET as i32)
             % NO_LETTERS_IN_ALPHABET as i32) as usize;
-        let calc2: i32 = (mapping[calc] as i32 - shift + NO_LETTERS_IN_ALPHABET as i32);
-        let calc3 = (calc2 % NO_LETTERS_IN_ALPHABET as i32) as u32;
-        calc3
+        let calc2: i32 = mapping[calc] as i32 - shift + NO_LETTERS_IN_ALPHABET as i32;
+        (calc2 % NO_LETTERS_IN_ALPHABET as i32) as u32
     }
 
     pub fn forward(&self, c: u32) -> u32 {
-        self.encipher(
+        Rotor::encipher(
             c,
             self.rotor_position as i32,
             self.ring_setting as i32,
@@ -127,7 +126,7 @@ impl Rotor {
     }
 
     pub fn backward(&self, c: u32) -> u32 {
-        self.encipher(
+        Rotor::encipher(
             c,
             self.rotor_position as i32,
             self.ring_setting as i32,

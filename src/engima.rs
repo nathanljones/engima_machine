@@ -1,7 +1,7 @@
 use crate::common::ASCII_OFFSET;
-use crate::plugboard::*;
-use crate::reflector::*;
-use crate::rotor::*;
+use crate::plugboard::Plugboard;
+use crate::reflector::{Reflector, ReflectorType};
+use crate::rotor::{Rotor, RotorName};
 
 pub struct Enigma {
     left_rotor: Rotor,
@@ -12,10 +12,10 @@ pub struct Enigma {
 }
 impl Enigma {
     fn new(
-        rotors: Vec<RotorName>,
+        rotors: &[RotorName],
         reflector: ReflectorType,
-        rotor_positions: Vec<u32>,
-        ring_settings: Vec<u32>,
+        rotor_positions: &[u32],
+        ring_settings: &[u32],
         plugboard_connections: String,
     ) -> Self {
         Enigma {
@@ -79,8 +79,8 @@ impl Enigma {
     }
 
     pub fn encrypt_char(&mut self, c: char) -> char {
-        let ret_number = (self.encrypt(c as u32 - ASCII_OFFSET));
-        return char::from_u32(ret_number + ASCII_OFFSET).unwrap();
+        let ret_number = self.encrypt(c as u32 - ASCII_OFFSET);
+        char::from_u32(ret_number + ASCII_OFFSET).unwrap()
     }
 
     pub fn encrypt_text(&mut self, text: &str) -> String {
@@ -100,10 +100,10 @@ mod tests {
     #[test]
     fn encrypt_test() {
         let mut enigma = Enigma::new(
-            vec![RotorName::I, RotorName::II, RotorName::III],
+            &vec![RotorName::I, RotorName::II, RotorName::III],
             ReflectorType::B,
-            vec![0, 0, 0],
-            vec![0, 0, 0],
+            &vec![0, 0, 0],
+            &vec![0, 0, 0],
             String::from(""),
         );
         let input = String::from("ABCDEFGHIJKLMNOPQRSTUVWXYZAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBBBBBABCDEFGHIJKLMNOPQRSTUVWXYZ");
@@ -115,10 +115,10 @@ mod tests {
     #[test]
     fn encrypt_varied_rotors() {
         let mut enigma = Enigma::new(
-            vec![RotorName::VII, RotorName::V, RotorName::IV],
+            &vec![RotorName::VII, RotorName::V, RotorName::IV],
             ReflectorType::B,
-            vec![10, 5, 12],
-            vec![1, 2, 3],
+            &vec![10, 5, 12],
+            &vec![1, 2, 3],
             String::from(""),
         );
         let input = String::from("ABCDEFGHIJKLMNOPQRSTUVWXYZAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBBBBBABCDEFGHIJKLMNOPQRSTUVWXYZ");
@@ -130,10 +130,10 @@ mod tests {
     #[test]
     fn long_input() {
         let mut enigma = Enigma::new(
-            vec![RotorName::III, RotorName::VI, RotorName::VIII],
+            &vec![RotorName::III, RotorName::VI, RotorName::VIII],
             ReflectorType::B,
-            vec![3, 5, 9],
-            vec![11, 13, 19],
+            &vec![3, 5, 9],
+            &vec![11, 13, 19],
             String::from(""),
         );
         let mut long_input: String = String::new();
@@ -154,10 +154,10 @@ mod tests {
     fn simple_4_plugs() {
         // Simple test - 4 plugs
         let mut enigma = Enigma::new(
-            vec![RotorName::I, RotorName::II, RotorName::III],
+            &vec![RotorName::I, RotorName::II, RotorName::III],
             ReflectorType::B,
-            vec![0, 0, 0],
-            vec![0, 0, 0],
+            &vec![0, 0, 0],
+            &vec![0, 0, 0],
             String::from("AC FG JY LW"),
         );
         enigma.wire_enigma();
@@ -170,10 +170,10 @@ mod tests {
     fn simple_6_plugs() {
         // Simple test - 4 plugs
         let mut enigma = Enigma::new(
-            vec![RotorName::IV, RotorName::VI, RotorName::III],
+            &vec![RotorName::IV, RotorName::VI, RotorName::III],
             ReflectorType::B,
-            vec![0, 10, 6],
-            vec![0, 0, 0],
+            &vec![0, 10, 6],
+            &vec![0, 0, 0],
             String::from("BM DH RS KN GZ FQ"),
         );
         enigma.wire_enigma();
@@ -187,10 +187,10 @@ mod tests {
     fn simple_10_plugs() {
         // Simple test - 4 plugs
         let mut enigma = Enigma::new(
-            vec![RotorName::I, RotorName::II, RotorName::III],
+            &vec![RotorName::I, RotorName::II, RotorName::III],
             ReflectorType::B,
-            vec![0, 1, 20],
-            vec![5, 5, 4],
+            &vec![0, 1, 20],
+            &vec![5, 5, 4],
             String::from("AG HR YT KI FL WE NM SD OP QJ"),
         );
         enigma.wire_enigma();
@@ -215,33 +215,30 @@ mod tests {
             .take(1000)
             .collect();
         let rotors_used: Vec<RotorName> = fastrand::choose_multiple(allrotors.into_iter(), 3);
-        let rotors_used2 = rotors_used.clone();
         let rotor_positions = vec![
             fastrand::u32(0..25),
             fastrand::u32(0..25),
             fastrand::u32(0..25),
         ];
-        let rotor_positions2 = rotor_positions.clone();
         let rotor_settings = vec![
             fastrand::u32(0..25),
             fastrand::u32(0..25),
             fastrand::u32(0..25),
         ];
-        let rotor_settings2 = rotor_settings.clone();
         let mut enigma1 = Enigma::new(
-            rotors_used,
+            &rotors_used,
             ReflectorType::B,
-            rotor_positions,
-            rotor_settings,
+            &rotor_positions,
+            &rotor_settings,
             String::from(""),
         );
         enigma1.wire_enigma();
         let cypher_text = enigma1.encrypt_text(&input);
         let mut enigma2 = Enigma::new(
-            rotors_used2,
+            &rotors_used,
             ReflectorType::B,
-            rotor_positions2,
-            rotor_settings2,
+            &rotor_positions,
+            &rotor_settings,
             String::from(""),
         );
         enigma2.wire_enigma();
