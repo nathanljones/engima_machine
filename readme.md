@@ -2,7 +2,7 @@
 
 This is a Rust implementation of an Engima Machine.
 
-It is based on the[JAVA implementation by Dr Mike Pound](https://github.com/mikepound/enigma)
+It is based on the [JAVA implementation by Dr Mike Pound](https://github.com/mikepound/enigma)
 
 At the moment this exists in an incomplete form with just the Rotor and Reflector components completed.
 
