@@ -1,3 +1,4 @@
+use crate::common::*;
 pub struct Plugboard {
     wiring: Vec<u32>,
     connections: String,
@@ -15,7 +16,7 @@ impl Plugboard {
     }
 
     fn identity_plugboard(&self) -> Vec<u32> {
-        let mut mapping: Vec<u32> = vec![0; 26];
+        let mut mapping: Vec<u32> = vec![0; NO_LETTERS_IN_ALPHABET as usize];
         for i in 0..mapping.len() {
             mapping[i] = i as u32;
         }
@@ -36,8 +37,8 @@ impl Plugboard {
             if pair.len() != 2 {
                 return mapping;
             }
-            let c1: u32 = pair.chars().next().unwrap() as u32 - 65;
-            let c2: u32 = pair.chars().nth(1).unwrap() as u32 - 65;
+            let c1: u32 = pair.chars().next().unwrap() as u32 - ASCII_OFFSET;
+            let c2: u32 = pair.chars().nth(1).unwrap() as u32 - ASCII_OFFSET;
 
             mapping[c1 as usize] = c2;
             mapping[c2 as usize] = c1;

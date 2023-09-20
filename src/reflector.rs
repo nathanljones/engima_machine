@@ -1,3 +1,5 @@
+use crate::common::ASCII_OFFSET;
+
 pub enum ReflectorType {
     B,
     C,
@@ -27,7 +29,10 @@ impl Reflector {
         self.forward_wiring = self.decode_wiring(&self.reflector_type.wiring());
     }
     fn decode_wiring(&self, wiring: &str) -> Vec<u32> {
-        wiring.chars().map(|x| x as u32 - 65).collect::<Vec<u32>>()
+        wiring
+            .chars()
+            .map(|x| x as u32 - ASCII_OFFSET)
+            .collect::<Vec<u32>>()
     }
     pub fn forward(&self, c: usize) -> u32 {
         self.forward_wiring[c]

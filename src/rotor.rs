@@ -1,3 +1,5 @@
+use crate::common::*;
+#[derive(Copy, Clone)]
 pub enum RotorName {
     I,
     II,
@@ -81,14 +83,17 @@ impl Rotor {
     }
 
     pub fn turnover(&mut self) {
-        self.rotor_position = (self.rotor_position + 1) % 26;
+        self.rotor_position = (self.rotor_position + 1) % NO_LETTERS_IN_ALPHABET;
     }
 
     pub fn position(&self) -> u32 {
         self.rotor_position
     }
     fn decode_wiring(&self, wiring: &str) -> Vec<u32> {
-        wiring.chars().map(|x| x as u32 - 65).collect::<Vec<u32>>()
+        wiring
+            .chars()
+            .map(|x| x as u32 - ASCII_OFFSET)
+            .collect::<Vec<u32>>()
     }
     fn set_wiring(&mut self) {
         self.forward_wiring = self.decode_wiring(&self.wiring);
@@ -105,7 +110,9 @@ impl Rotor {
     }
     fn encipher(&self, k: u32, pos: u32, ring: u32, mapping: &[u32]) -> u32 {
         let shift = pos - ring;
-        (mapping[((k + shift + 26) % 26) as usize] - shift + 26) % 26
+        (mapping[((k + shift + NO_LETTERS_IN_ALPHABET) % NO_LETTERS_IN_ALPHABET) as usize] - shift
+            + NO_LETTERS_IN_ALPHABET)
+            % NO_LETTERS_IN_ALPHABET
     }
 
     pub fn forward(&self, c: u32) -> u32 {
