@@ -1,3 +1,5 @@
+use fastrand::char;
+
 use crate::common::{ASCII_OFFSET, NO_LETTERS_IN_ALPHABET};
 // 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25
 // A B C D E F G H I J K  L  M  N  O  P  Q  R  S  T  U  V  W  X  Y  Z
@@ -91,8 +93,8 @@ impl Rotor {
 
     pub fn turnover(&mut self) {
         self.rotor_position = (self.rotor_position + 1) % NO_LETTERS_IN_ALPHABET;
-        self.forward_wiring.rotate_right(1);
-        self.backward_wiring.rotate_right(1);
+        /*         self.forward_wiring.rotate_left(1);
+        self.backward_wiring.rotate_left(1); */
     }
 
     pub fn position(&self) -> u32 {
@@ -124,12 +126,14 @@ impl Rotor {
             .iter()
             .position(|&x| x == self.ring_setting)
             .unwrap();
-        if new_dot_pos > ring_letter_pos {
-            return_wiring.rotate_right(new_dot_pos - ring_letter_pos)
-        } else {
-            return_wiring.rotate_left(ring_letter_pos - new_dot_pos)
+        if new_dot_pos != ring_letter_pos {
+            if new_dot_pos > ring_letter_pos {
+                return_wiring.rotate_right(new_dot_pos - ring_letter_pos)
+            } else {
+                return_wiring.rotate_left(ring_letter_pos - new_dot_pos)
+            }
         };
-        return_wiring.rotate_left(self.rotor_position as usize);
+        //return_wiring.rotate_left(self.rotor_position as usize);
         return_wiring
     }
 
@@ -151,11 +155,25 @@ impl Rotor {
     }
 
     pub fn forward(&self, character: u32) -> u32 {
-        self.forward_wiring[character as usize]
+        let in_character = (character + self.rotor_position) % 26;
+        let encoded_character = self.forward_wiring[in_character as usize];
+        let new_character: i32 = encoded_character as i32 - self.rotor_position as i32;
+        if new_character < 0 {
+            (26 + new_character) as u32
+        } else {
+            encoded_character - self.rotor_position
+        }
     }
 
     pub fn backward(&self, character: u32) -> u32 {
-        self.backward_wiring[character as usize]
+        let in_character = (character + self.rotor_position) % 26;
+        let encoded_character = self.backward_wiring[in_character as usize];
+        let new_character: i32 = encoded_character as i32 - self.rotor_position as i32;
+        if new_character < 0 {
+            (26 + new_character) as u32
+        } else {
+            encoded_character - self.rotor_position
+        }
     }
 }
 #[cfg(test)]
@@ -195,9 +213,9 @@ mod tests {
     fn encode_forward() {
         let mut rotor = Rotor::new(RotorName::II, 1, 2);
         rotor.set_encoding();
-        assert_eq!(rotor.forward(1), 2);
-        assert_eq!(rotor.forward(9), 25);
-        assert_eq!(rotor.forward(21), 17);
+        assert_eq!(rotor.forward(1), 1);
+        assert_eq!(rotor.forward(9), 24);
+        assert_eq!(rotor.forward(21), 16);
     }
     #[test]
     fn encode_backward() {
@@ -211,6 +229,6 @@ mod tests {
     fn ring_settings() {
         let mut rotor = Rotor::new(RotorName::I, 1, 2);
         rotor.set_encoding();
-        assert_eq!(rotor.forward_wiring[1], 4);
+        assert_eq!(rotor.forward_wiring[1], 11);
     }
 }
