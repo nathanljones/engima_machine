@@ -1,4 +1,6 @@
 use crate::common::{ASCII_OFFSET, NO_LETTERS_IN_ALPHABET};
+// 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25
+// A B C D E F G H I J K  L  M  N  O  P  Q  R  S  T  U  V  W  X  Y  Z
 #[derive(Copy, Clone)]
 pub enum RotorName {
     I,
@@ -89,6 +91,8 @@ impl Rotor {
 
     pub fn turnover(&mut self) {
         self.rotor_position = (self.rotor_position + 1) % NO_LETTERS_IN_ALPHABET;
+        self.forward_wiring.rotate_right(1);
+        self.backward_wiring.rotate_right(1);
     }
 
     pub fn position(&self) -> u32 {
@@ -103,6 +107,30 @@ impl Rotor {
     fn set_wiring(&mut self) {
         self.forward_wiring = Rotor::decode_wiring(&self.wiring);
         self.backward_wiring = self.inverse_wiring();
+
+        self.forward_wiring = self.rewrire_rotors(&self.forward_wiring);
+        self.backward_wiring = self.rewrire_rotors(&self.backward_wiring);
+    }
+
+    fn rewrire_rotors(&self, wiring: &Vec<u32>) -> Vec<u32> {
+        let mut return_wiring = wiring.clone();
+        let a_dot_pos = return_wiring.iter().position(|&x| x == 0).unwrap();
+        return_wiring = return_wiring
+            .iter()
+            .map(|&x| (x + self.ring_setting) % 26)
+            .collect();
+        let new_dot_pos = (a_dot_pos + self.ring_setting as usize) % 26;
+        let ring_letter_pos = return_wiring
+            .iter()
+            .position(|&x| x == self.ring_setting)
+            .unwrap();
+        if new_dot_pos > ring_letter_pos {
+            return_wiring.rotate_right(new_dot_pos - ring_letter_pos)
+        } else {
+            return_wiring.rotate_left(ring_letter_pos - new_dot_pos)
+        };
+        return_wiring.rotate_left(self.rotor_position as usize);
+        return_wiring
     }
 
     fn inverse_wiring(&self) -> Vec<u32> {
@@ -123,23 +151,11 @@ impl Rotor {
     }
 
     pub fn forward(&self, character: u32) -> u32 {
-        #[allow(clippy::cast_possible_truncation)]
-        Rotor::encipher(
-            character,
-            self.rotor_position as i32,
-            self.ring_setting as i32,
-            &self.forward_wiring,
-        )
+        self.forward_wiring[character as usize]
     }
 
     pub fn backward(&self, character: u32) -> u32 {
-        #[allow(clippy::cast_possible_truncation)]
-        Rotor::encipher(
-            character,
-            self.rotor_position as i32,
-            self.ring_setting as i32,
-            &self.backward_wiring,
-        )
+        self.backward_wiring[character as usize]
     }
 }
 #[cfg(test)]
@@ -179,9 +195,9 @@ mod tests {
     fn encode_forward() {
         let mut rotor = Rotor::new(RotorName::II, 1, 2);
         rotor.set_encoding();
-        assert_eq!(rotor.forward(1), 1);
-        assert_eq!(rotor.forward(9), 24);
-        assert_eq!(rotor.forward(21), 16);
+        assert_eq!(rotor.forward(1), 2);
+        assert_eq!(rotor.forward(9), 25);
+        assert_eq!(rotor.forward(21), 17);
     }
     #[test]
     fn encode_backward() {
@@ -190,5 +206,11 @@ mod tests {
         assert_eq!(rotor.backward(1), 1);
         assert_eq!(rotor.backward(9), 6);
         assert_eq!(rotor.backward(21), 8);
+    }
+    #[test]
+    fn ring_settings() {
+        let mut rotor = Rotor::new(RotorName::I, 1, 2);
+        rotor.set_encoding();
+        assert_eq!(rotor.forward_wiring[1], 4);
     }
 }
